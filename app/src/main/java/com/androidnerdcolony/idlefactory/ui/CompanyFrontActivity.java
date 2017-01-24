@@ -250,14 +250,18 @@ public class CompanyFrontActivity extends AppCompatActivity implements GoogleApi
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Timber.d("balance Listener" + dataSnapshot.toString());
-                    double balance = dataSnapshot.getValue(Double.class);
-                    SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(context);
-                    SharedPreferences.Editor editor = preference.edit();
+                    double balance = 0;
+                    if (dataSnapshot.exists()) {
+                        balance = dataSnapshot.getValue(Double.class);
 
-                    editor.putString(getString(R.string.db_balance), String.valueOf(balance));
-                    editor.apply();
-                    String balanceString = ConvertNumber.numberToString(balance);
-                    balanceView.setText(balanceString);
+                        SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(context);
+                        SharedPreferences.Editor editor = preference.edit();
+
+                        editor.putString(getString(R.string.db_balance), String.valueOf(balance));
+                        editor.apply();
+                        String balanceString = ConvertNumber.numberToString(balance);
+                        balanceView.setText(balanceString);
+                    }
                 }
 
                 @Override
