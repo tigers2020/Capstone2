@@ -2,6 +2,8 @@ package com.androidnerdcolony.idlefactory.ui.adapters;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -11,6 +13,7 @@ import android.widget.Toast;
 import com.androidnerdcolony.idlefactory.R;
 import com.androidnerdcolony.idlefactory.datalayout.FactoryLine;
 import com.androidnerdcolony.idlefactory.module.ConvertNumber;
+import com.androidnerdcolony.idlefactory.module.FactoryPreferenceManager;
 import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -55,6 +58,7 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
     @Override
     protected void populateView(View v, final FactoryLine line, final int position) {
         lines.add(position, line);
+        String key = getRef(position).getKey();
         final ViewHolder holder = new ViewHolder(v);
         if (line.isOpen()) {
             holder.factoryLineOpenButton.setVisibility(View.GONE);
@@ -92,8 +96,8 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
         });
 
 
-        holder.factoryLineOpenButton.setOnClickListener(new ClickHandler(line));
-        holder.factoryLineUpgradeButton.setOnClickListener(new ClickHandler(line));
+        holder.factoryLineOpenButton.setOnClickListener(new ClickHandler(line, key));
+        holder.factoryLineUpgradeButton.setOnClickListener(new ClickHandler(line, key));
         if (line.isOpen()) {
             holder.factoryLineOpenButton.setVisibility(View.GONE);
             holder.factoryLineUpgradeButton.setVisibility(View.VISIBLE);
@@ -107,25 +111,42 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
 
         FactoryLine line;
         double balance;
+        String key;
 
-        public ClickHandler(FactoryLine line) {
+        public ClickHandler(FactoryLine line, String key) {
             this.line = line;
+            this.key = key;
         }
 
         @Override
         public void onClick(View view) {
 //        mClickHandler.onClick(view);
             int id = view.getId();
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+
+            String PrefBalance = FactoryPreferenceManager.getPrefBalance(context);
+            balance = Double.valueOf(PrefBalance);
+            String factoryName = FactoryPreferenceManager.getPrefFactoryName(context);
 
             switch (id) {
-                case R.id.factory_line_upgrade_button:
+                case R.id.factory_line_open_button:
                     Toast.makeText(context, "Upgrade Clicked", Toast.LENGTH_SHORT).show();
                     Timber.d("Line = " + line.getLineCost());
+                    double lineCost = line.getLineCost();
                     //need to get line information.
+                    Timber.d("onClick Balance = " + balance);
+                    balance = balance -
+                            lineCost;
+                    mUserDataRef.child(context.getString(R.string.user_states)).child(context.getString(R.string.db_balance)).setValue(balance);
+                    mUserDataRef.child(context.getString(R.string.db_factories)).child(factoryName).child(key).child("open").setValue(true);
+
+
                     break;
-                case R.id.factory_line_open_button:
+                case R.id.factory_line_upgrade_button:
                     Toast.makeText(context, "Open Clicked", Toast.LENGTH_SHORT).show();
-                    Timber.d("Line = " + line.getOpenCost());
+                    Timber.d("Line = " + line.getLineCost());
+                    balance = balance - line.getLineCost();
+                    mUserDataRef.child(context.getString(R.string.user_states)).child(context.getString(R.string.db_balance)).setValue(balance);
 
 
                     //need to get line information..
