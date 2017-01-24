@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">AndroidNerdColony - Business Tycoon idle</string>
+    <string name="worker">worker</string>
+    <string name="factory_line">factory_line</string>
+    <string name="factory_box">factory_box</string>
+    <string name="market">Market</string>
+    <string name="truck">truck</string>
+    <string name="factory">Factory</string>
+    <string name="loading">Loading</string>
+
+    <string name="db_factory_1" translatable="false">parts_factory</string>
+    <string name="db_factory_2" translatable="false">transistor_factory</string>
+    <string name="db_factory_3" translatable="false">panel_factory</string>
+    <string name="db_factory_4" translatable="false">semiconductor_factory</string>
+    <string name="db_factory_5" translatable="false">processor_factory</string>
+    <string name="factory_1_name">Parts Factory</string>
+    <string name="factory_2_name">Transistor Factory</string>
+    <string name="factory_3_name">Panel Factory</string>
+    <string name="factory_4_name">Semiconductor Factory</string>
+    <string name="factory_5_name">Processor Factory</string>
+    <string name="user_states">user_states</string>
+    <string name="factories">factories</string>
+    <string name="open">Open</string>
+    <string name="manager">Manager</string>
+    <string name="reset">reset</string>
+    <string name="balance">Balance</string>
+    <string name="idle_cash">Idle Cash</string>
+    <string name="upgrade">Upgrade</string>
+    <string name="upgrades">Upgrade\n$d</string>
+
+</resources>

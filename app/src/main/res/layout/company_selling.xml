@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/activity_horizontal_margin">
+
+    <ImageView
+        android:id="@+id/factory"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_alignParentEnd="true"
+        android:contentDescription="@string/factory"
+        android:src="@drawable/factory"/>
+
+    <ImageView
+        android:id="@+id/market"
+        android:layout_width="58dp"
+        android:layout_height="58dp"
+        android:layout_alignBottom="@id/factory"
+        android:src="@drawable/market"
+        android:contentDescription="@string/market"/>
+
+    <ImageView
+        android:id="@+id/manager"
+        android:layout_width="48dp"
+        android:layout_height="64dp"
+        android:layout_marginTop="16dp"
+        android:layout_toStartOf="@id/factory"
+        android:src="@drawable/manager"/>
+
+    <ImageView
+        android:id="@+id/truck"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_alignBottom="@id/market"
+        android:src="@drawable/truck"
+        android:layout_toEndOf="@id/market"
+        android:layout_toRightOf="@id/market"
+        android:contentDescription="@string/truck"/>
+
+</RelativeLayout>

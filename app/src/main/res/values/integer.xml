@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <integer name="factory_line_default_config">100</integer>
+    <integer name="factory_line_default_open_cost">500</integer>
+    <integer name="factory_line_default_upgrade_cost">1000</integer>
+    <integer name="factory_line_default_time">10000</integer>
+
+
+    <!--lineCost multipler 14 + 2-->
+    <!--upgradeCost multipler current + 9%3.78-->
+</resources>
