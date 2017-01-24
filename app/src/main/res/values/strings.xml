@@ -13,6 +13,11 @@
     <string name="db_factory_3" translatable="false">panel_factory</string>
     <string name="db_factory_4" translatable="false">semiconductor_factory</string>
     <string name="db_factory_5" translatable="false">processor_factory</string>
+    <string name="db_user_states">user_states</string>
+    <string name="db_balance">balance</string>
+    <string name="db_idle_cash">idle_cash</string>
+    <string name="db_factories">factories</string>
+
     <string name="factory_1_name">Parts Factory</string>
     <string name="factory_2_name">Transistor Factory</string>
     <string name="factory_3_name">Panel Factory</string>
@@ -26,6 +31,5 @@
     <string name="balance">Balance</string>
     <string name="idle_cash">Idle Cash</string>
     <string name="upgrade">Upgrade</string>
-    <string name="upgrades">Upgrade\n$d</string>
-
+    <string name="db_open">open</string>
 </resources>
