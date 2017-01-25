@@ -43,4 +43,18 @@ public class FactoryPreferenceManager {
         return preferences.getString(context.getString(R.string.db_factories), context.getString(R.string.db_factory_1));
 
     }
+    public static void setPrefLevel(Context context, int lineLevel, String key){
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = preferences.edit();
+
+        String lineLevelString = key + "_level";
+        editor.putInt(lineLevelString, lineLevel);
+        editor.apply();
+    }
+
+    public static int getPrefLevel(Context context, String key) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        String lineLevel = key + "_level";
+        return preferences.getInt(lineLevel, 1);
+    }
 }

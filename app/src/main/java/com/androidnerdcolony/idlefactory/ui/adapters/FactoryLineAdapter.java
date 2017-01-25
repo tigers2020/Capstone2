@@ -31,6 +31,10 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import timber.log.Timber;
 
+import static android.R.attr.level;
+import static com.androidnerdcolony.idlefactory.R.string.balance;
+import static com.androidnerdcolony.idlefactory.R.string.open;
+
 /**
  * Created by tiger on 1/23/2017.
  */
@@ -67,14 +71,23 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
         double openCost = line.getOpenCost();
 
         String openCostString = ConvertNumber.numberToString(openCost);
-        String openString = context.getString(R.string.open) + "\n" + openCostString;
+        String openString = context.getString(open) + "\n" + openCostString;
 
         holder.factoryLineOpenButton.setText(openString);
+        holder.factoryLineUpgradeButton.setText(String.valueOf(line.getLevel()));
 
         holder.factoryLineOpenButton.setTag(position);
         holder.factoryLineUpgradeButton.setTag(position);
         holder.factoryLineOpenButton.setEnabled(false);
 
+        double lineCost = line.getLineCost();
+        int level = line.getLevel();
+
+        for (int i = 0; i < level; i++) {
+            lineCost = lineCost + (lineCost * 0.1);
+        }
+
+        final double finalLineCost = lineCost;
         mUserDataRef.child(context.getString(R.string.user_states)).child(context.getString(R.string.db_balance)).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -84,6 +97,11 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
                         holder.factoryLineOpenButton.setEnabled(false);
                     } else {
                         holder.factoryLineOpenButton.setEnabled(true);
+                    }
+                    if (balance < finalLineCost){
+                        holder.factoryLineUpgradeButton.setEnabled(false);
+                    }else {
+                        holder.factoryLineUpgradeButton.setEnabled(true);
                     }
                 }
             }
@@ -112,8 +130,9 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
         FactoryLine line;
         double balance;
         String key;
+        DatabaseReference factoryRef;
 
-        public ClickHandler(FactoryLine line, String key) {
+        ClickHandler(FactoryLine line, String key) {
             this.line = line;
             this.key = key;
         }
@@ -127,26 +146,43 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
             String PrefBalance = FactoryPreferenceManager.getPrefBalance(context);
             balance = Double.valueOf(PrefBalance);
             String factoryName = FactoryPreferenceManager.getPrefFactoryName(context);
+            factoryRef = mUserDataRef.child(context.getString(R.string.factories)).child(factoryName).child(key);
 
             switch (id) {
                 case R.id.factory_line_open_button:
-                    Toast.makeText(context, "Upgrade Clicked", Toast.LENGTH_SHORT).show();
                     Timber.d("Line = " + line.getLineCost());
-                    double lineCost = line.getLineCost();
+                    double openCost = line.getOpenCost();
                     //need to get line information.
                     Timber.d("onClick Balance = " + balance);
-                    balance = balance -
-                            lineCost;
+                    if (balance < openCost){
+                        Toast.makeText(context, "balance is not enough", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    balance = balance - openCost;
                     mUserDataRef.child(context.getString(R.string.user_states)).child(context.getString(R.string.db_balance)).setValue(balance);
                     mUserDataRef.child(context.getString(R.string.db_factories)).child(factoryName).child(key).child("open").setValue(true);
 
 
                     break;
                 case R.id.factory_line_upgrade_button:
-                    Toast.makeText(context, "Open Clicked", Toast.LENGTH_SHORT).show();
                     Timber.d("Line = " + line.getLineCost());
-                    balance = balance - line.getLineCost();
+                    double lineCost = line.getLineCost();
+                    int level = FactoryPreferenceManager.getPrefLevel(context, key);
+                    double upgradeCost = lineCost;
+                    for (int i = 0; i < level; i++) {
+                        upgradeCost = upgradeCost + (upgradeCost * 0.1);
+                    }
+                    if (balance < upgradeCost ){
+                        Toast.makeText(context, "balance is not enough", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    balance = balance - upgradeCost;
                     mUserDataRef.child(context.getString(R.string.user_states)).child(context.getString(R.string.db_balance)).setValue(balance);
+                    Timber.d("level before: " + level);
+                    level = level + 1;
+                    factoryRef.child("level").setValue(level);
+                    Timber.d("level after: " + level);
+                    FactoryPreferenceManager.setPrefLevel(context, level, key);
 
 
                     //need to get line information..

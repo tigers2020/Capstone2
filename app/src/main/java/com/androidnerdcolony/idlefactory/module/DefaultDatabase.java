@@ -43,9 +43,12 @@ public class DefaultDatabase {
         FactoryLine currentLine = defaultFactoryLine;
         double openCost = defaultFactoryLine.getOpenCost();
         double lineCost = defaultFactoryLine.getLineCost();
+        double workCapacity = defaultFactoryLine.getWorkCapacity();
         for (int j = 0; j < i; j++) {
             openCost = openCost * (14 + (j*2));
             lineCost = openCost + (openCost * (9+(j*2))/100);
+            workCapacity = workCapacity * (100+(j*10));
+
 
         }
         currentLine.setOpenCost(openCost);
@@ -65,7 +68,7 @@ public class DefaultDatabase {
         factoryLine.setWorking(false);
         factoryLine.setOpenCost(context.getResources().getInteger(R.integer.factory_line_default_open_cost));
         factoryLine.setLineCost(context.getResources().getInteger(R.integer.factory_line_default_upgrade_cost));
-        factoryLine.setWorkCapacity(1);
+        factoryLine.setWorkCapacity(500);
         factoryLine.setLineNumber(1);
         return factoryLine;
     }

@@ -250,7 +250,7 @@ public class CompanyFrontActivity extends AppCompatActivity implements GoogleApi
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Timber.d("balance Listener" + dataSnapshot.toString());
-                    double balance = 0;
+                    double balance;
                     if (dataSnapshot.exists()) {
                         balance = dataSnapshot.getValue(Double.class);
 
