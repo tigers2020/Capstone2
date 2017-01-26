@@ -6,6 +6,7 @@ import android.preference.Preference;
 import android.preference.PreferenceManager;
 
 import com.androidnerdcolony.idlefactory.R;
+import com.androidnerdcolony.idlefactory.datalayout.FactoryLine;
 
 /**
  * Created by tiger on 1/24/2017.
@@ -56,5 +57,17 @@ public class FactoryPreferenceManager {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         String lineLevel = key + "_level";
         return preferences.getInt(lineLevel, 1);
+    }
+
+    public static void setDefaultFactoryLine(FactoryLine defaultFactoryLine, int i, Context context) {
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = preferences.edit();
+
+        editor.putBoolean("line_"+i+"_isOpen", defaultFactoryLine.isOpen());
+        editor.putBoolean("line_"+i+"_isWorking", defaultFactoryLine.isWorking());
+        editor.putString("line_"+i+"_workCapacity", String.valueOf(defaultFactoryLine.getWorkCapacity()));
+
+
     }
 }

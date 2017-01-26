@@ -3,11 +3,13 @@ package com.androidnerdcolony.idlefactory.module;
 import android.content.Intent;
 import android.os.AsyncTask;
 
+import java.util.Map;
+
 /**
  * Created by tiger on 1/24/2017.
  */
 
-public class FactoryWorking extends AsyncTask<Void, Integer, Double> {
+public class FactoryWorking extends AsyncTask<Map, Integer, Double> {
 
     @Override
     protected void onProgressUpdate(Integer... values) {
@@ -20,12 +22,12 @@ public class FactoryWorking extends AsyncTask<Void, Integer, Double> {
     }
 
     @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
+    protected Double doInBackground(Map... maps) {
+        return null;
     }
 
     @Override
-    protected Double doInBackground(Void... voids) {
-        return null;
+    protected void onPreExecute() {
+        super.onPreExecute();
     }
 }

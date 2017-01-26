@@ -3,17 +3,23 @@ package com.androidnerdcolony.idlefactory.ui.adapters;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.androidnerdcolony.idlefactory.R;
 import com.androidnerdcolony.idlefactory.datalayout.FactoryLine;
 import com.androidnerdcolony.idlefactory.module.ConvertNumber;
 import com.androidnerdcolony.idlefactory.module.FactoryPreferenceManager;
+import com.androidnerdcolony.idlefactory.module.FactoryWorking;
 import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -26,6 +32,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -34,6 +42,7 @@ import timber.log.Timber;
 import static android.R.attr.level;
 import static com.androidnerdcolony.idlefactory.R.string.balance;
 import static com.androidnerdcolony.idlefactory.R.string.open;
+import static com.androidnerdcolony.idlefactory.R.string.truck;
 
 /**
  * Created by tiger on 1/23/2017.
@@ -62,7 +71,7 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
     @Override
     protected void populateView(View v, final FactoryLine line, final int position) {
         lines.add(position, line);
-        String key = getRef(position).getKey();
+        final String key = getRef(position).getKey();
         final ViewHolder holder = new ViewHolder(v);
         if (line.isOpen()) {
             holder.factoryLineOpenButton.setVisibility(View.GONE);
@@ -86,7 +95,6 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
         for (int i = 0; i < level; i++) {
             lineCost = lineCost + (lineCost * 0.1);
         }
-
         final double finalLineCost = lineCost;
         mUserDataRef.child(context.getString(R.string.user_states)).child(context.getString(R.string.db_balance)).addValueEventListener(new ValueEventListener() {
             @Override
@@ -113,17 +121,83 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
             }
         });
 
-
         holder.factoryLineOpenButton.setOnClickListener(new ClickHandler(line, key));
         holder.factoryLineUpgradeButton.setOnClickListener(new ClickHandler(line, key));
         if (line.isOpen()) {
             holder.factoryLineOpenButton.setVisibility(View.GONE);
             holder.factoryLineUpgradeButton.setVisibility(View.VISIBLE);
+
         } else {
             holder.factoryLineOpenButton.setVisibility(View.VISIBLE);
             holder.factoryLineUpgradeButton.setVisibility(View.GONE);
         }
+        final WorkingProgress workingProgress = new WorkingProgress(holder);
+
+        Thread workingThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (line.isOpen()){
+                    workingProgress.execute(1000);
+
+                }
+            }
+        });
+
+        if (line.isOpen()){
+            workingThread.start();
+        }
     }
+    private class WorkingProgress extends AsyncTask<Integer, Integer, Double> {
+
+        ViewHolder holder;
+        public WorkingProgress(ViewHolder holder){
+            this.holder = holder;
+        }
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
+            int progress = values[0];
+
+            holder.workingProgressBar.setProgress(progress);
+        }
+
+        @Override
+        protected void onPostExecute(Double profit) {
+            super.onPostExecute(profit);
+            holder.workingProgressBar.setVisibility(View.INVISIBLE);
+            holder.workingProgressBar.setProgress(0);
+
+            String profitString = ConvertNumber.numberToString(profit);
+            holder.workProfitView.setText(profitString);
+
+            Animation profitAni = AnimationUtils.loadAnimation(context, R.anim.work_profit);
+            holder.workProfitView.startAnimation(profitAni);
+
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            holder.workingProgressBar.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected Double doInBackground(Integer... params) {
+
+            double profit = 100;
+            for (int i = 0; i < params[0]; i++) {
+                try {
+                    Thread.sleep(1000);
+                    publishProgress(i);
+                    profit = profit + profit * (i/10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            }
+            return profit;
+        }
+    };
 
     private class ClickHandler implements View.OnClickListener {
 
@@ -206,6 +280,8 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
         Button factoryLineUpgradeButton;
         @BindView(R.id.working_progress)
         ProgressBar workingProgressBar;
+        @BindView(R.id.work_profits)
+        TextView workProfitView;
 
         View view;
 

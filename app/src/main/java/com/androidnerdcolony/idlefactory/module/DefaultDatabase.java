@@ -23,6 +23,8 @@ public class DefaultDatabase {
 
         for (int i = 0; i < 10; i++) {
             factoryRef.child("line_"+i).setValue(setFactoryLines(defaultFactoryLine, i));
+            FactoryPreferenceManager.setDefaultFactoryLine(defaultFactoryLine, i, context);
+
         }
         UserStates userStates = setDefaultUserState(context);
         userDataRef.child(context.getString(R.string.user_states)).setValue(userStates);
@@ -48,11 +50,10 @@ public class DefaultDatabase {
             openCost = openCost * (14 + (j*2));
             lineCost = openCost + (openCost * (9+(j*2))/100);
             workCapacity = workCapacity * (100+(j*10));
-
-
         }
         currentLine.setOpenCost(openCost);
         currentLine.setLineCost(lineCost);
+
 
         return currentLine;
     }
@@ -70,6 +71,7 @@ public class DefaultDatabase {
         factoryLine.setLineCost(context.getResources().getInteger(R.integer.factory_line_default_upgrade_cost));
         factoryLine.setWorkCapacity(500);
         factoryLine.setLineNumber(1);
+
         return factoryLine;
     }
 }
