@@ -1,11 +1,14 @@
 package com.androidnerdcolony.idlefactory.ui.adapters;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -30,9 +33,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.Timer;
 import java.util.TreeMap;
 
 import butterknife.BindView;
@@ -54,6 +60,8 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
     private List<FactoryLine> lines;
     private DatabaseReference mUserDataRef;
 
+    int workTimeInterval = 100 ;
+    Handler workHandler;
     public FactoryLineAdapter(Activity activity, Class modelClass, Query ref) {
         super(activity, modelClass, R.layout.factory_line, ref);
         FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -83,7 +91,7 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
         String openString = context.getString(open) + "\n" + openCostString;
 
         holder.factoryLineOpenButton.setText(openString);
-        holder.factoryLineUpgradeButton.setText(String.valueOf(line.getLevel()));
+        holder.lineLevelView.setText(String.valueOf(line.getLevel()));
 
         holder.factoryLineOpenButton.setTag(position);
         holder.factoryLineUpgradeButton.setTag(position);
@@ -95,6 +103,9 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
         for (int i = 0; i < level; i++) {
             lineCost = lineCost + (lineCost * 0.1);
         }
+
+        String lineCostString = context.getString(R.string.upgrade) + "\n" + ConvertNumber.numberToString(lineCost);
+        holder.factoryLineUpgradeButton.setText(lineCostString);
         final double finalLineCost = lineCost;
         mUserDataRef.child(context.getString(R.string.user_states)).child(context.getString(R.string.db_balance)).addValueEventListener(new ValueEventListener() {
             @Override
@@ -106,16 +117,14 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
                     } else {
                         holder.factoryLineOpenButton.setEnabled(true);
                     }
-                    if (balance < finalLineCost){
+                    if (balance < finalLineCost) {
                         holder.factoryLineUpgradeButton.setEnabled(false);
-                    }else {
+                    } else {
                         holder.factoryLineUpgradeButton.setEnabled(true);
                     }
                 }
             }
-
             @Override
-
             public void onCancelled(DatabaseError databaseError) {
 
             }
@@ -127,26 +136,47 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
             holder.factoryLineOpenButton.setVisibility(View.GONE);
             holder.factoryLineUpgradeButton.setVisibility(View.VISIBLE);
 
+
+
         } else {
             holder.factoryLineOpenButton.setVisibility(View.VISIBLE);
             holder.factoryLineUpgradeButton.setVisibility(View.GONE);
         }
-        final WorkingProgress workingProgress = new WorkingProgress(holder);
 
-        Thread workingThread = new Thread(new Runnable() {
+
+        //repeat working process
+        workTimeInterval = 100 * line.getConfigTime();
+
+        WorkingProgress workingProgress = new WorkingProgress(holder);
+        holder.workingProgressBar.setMax(workTimeInterval);
+        workHandler = new Handler();
+
+        final Runnable workChecker = new Runnable() {
             @Override
             public void run() {
-                while (line.isOpen()){
-                    workingProgress.execute(1000);
-
-                }
+                Timber.d(key + " working");
+                workHandler.postDelayed(this, workTimeInterval);
             }
-        });
-
-        if (line.isOpen()){
-            workingThread.start();
+        };
+        if (line.isOpen()) {
+            workHandler.postDelayed(workChecker, workTimeInterval);
+        }else{
+            workHandler.removeCallbacks(workChecker);
         }
     }
+
+    private void workDone(FactoryLine line, ViewHolder holder) {
+        double workProfit = line.getWorkCapacity();
+        String workProfitString = ConvertNumber.numberToString(workProfit);
+        holder.workProfitView.setVisibility(View.VISIBLE);
+        holder.workProfitView.setText(workProfitString);
+        holder.workProfitView.setAnimation(AnimationUtils.loadAnimation(context, R.anim.work_profit));
+        holder.workProfitView.animate();
+
+
+    }
+
+
     private class WorkingProgress extends AsyncTask<Integer, Integer, Double> {
 
         ViewHolder holder;
@@ -157,8 +187,9 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
         protected void onProgressUpdate(Integer... values) {
             super.onProgressUpdate(values);
             int progress = values[0];
-
-            holder.workingProgressBar.setProgress(progress);
+            if (progress < 100) {
+                holder.workingProgressBar.setProgress(progress);
+            }
         }
 
         @Override
@@ -169,7 +200,6 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
 
             String profitString = ConvertNumber.numberToString(profit);
             holder.workProfitView.setText(profitString);
-
             Animation profitAni = AnimationUtils.loadAnimation(context, R.anim.work_profit);
             holder.workProfitView.startAnimation(profitAni);
 
@@ -185,16 +215,16 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
         protected Double doInBackground(Integer... params) {
 
             double profit = 100;
-            for (int i = 0; i < params[0]; i++) {
-                try {
-                    Thread.sleep(1000);
-                    publishProgress(i);
-                    profit = profit + profit * (i/10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                for (int i = 0; i < params[0]; i++) {
+                    try {
+                        Thread.sleep(100);
+                        publishProgress(i);
 
-            }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                }
             return profit;
         }
     };
@@ -246,6 +276,7 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
                     for (int i = 0; i < level; i++) {
                         upgradeCost = upgradeCost + (upgradeCost * 0.1);
                     }
+
                     if (balance < upgradeCost ){
                         Toast.makeText(context, "balance is not enough", Toast.LENGTH_SHORT).show();
                         return;
@@ -282,6 +313,8 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
         ProgressBar workingProgressBar;
         @BindView(R.id.work_profits)
         TextView workProfitView;
+        @BindView(R.id.line_level)
+                TextView lineLevelView;
 
         View view;
 
