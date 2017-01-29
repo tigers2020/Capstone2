@@ -1,33 +1,14 @@
 package com.androidnerdcolony.idlefactory.module;
 
-import android.content.Intent;
-import android.os.AsyncTask;
-
-import java.util.Map;
+import android.content.Context;
 
 /**
  * Created by tiger on 1/24/2017.
  */
 
-public class FactoryWorking extends AsyncTask<Map, Integer, Double> {
-
-    @Override
-    protected void onProgressUpdate(Integer... values) {
-        super.onProgressUpdate(values);
-    }
-
-    @Override
-    protected void onPostExecute(Double aDouble) {
-        super.onPostExecute(aDouble);
-    }
-
-    @Override
-    protected Double doInBackground(Map... maps) {
-        return null;
-    }
-
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
+public class FactoryWorking {
+    public FactoryWorking(Context context){
+        new FactoryPreferenceManager();
+        boolean working = FactoryPreferenceManager.getPrefWorking(context);
     }
 }

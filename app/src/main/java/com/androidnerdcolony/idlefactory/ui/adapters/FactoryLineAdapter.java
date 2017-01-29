@@ -35,6 +35,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.sql.Time;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -45,7 +46,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import timber.log.Timber;
 
+import static android.R.attr.delay;
 import static android.R.attr.level;
+import static android.R.attr.priority;
 import static com.androidnerdcolony.idlefactory.R.string.balance;
 import static com.androidnerdcolony.idlefactory.R.string.open;
 import static com.androidnerdcolony.idlefactory.R.string.truck;
@@ -59,14 +62,12 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
     private Context context;
     private List<FactoryLine> lines;
     private DatabaseReference mUserDataRef;
-
-    int workTimeInterval = 100 ;
-    Handler workHandler;
     public FactoryLineAdapter(Activity activity, Class modelClass, Query ref) {
         super(activity, modelClass, R.layout.factory_line, ref);
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         FirebaseAuth auth = FirebaseAuth.getInstance();
         FirebaseUser user = auth.getCurrentUser();
+        new FactoryPreferenceManager();
 
         if (user != null) {
             mUserDataRef = database.getReference(user.getUid());
@@ -79,6 +80,7 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
     @Override
     protected void populateView(View v, final FactoryLine line, final int position) {
         lines.add(position, line);
+
         final String key = getRef(position).getKey();
         final ViewHolder holder = new ViewHolder(v);
         if (line.isOpen()) {
@@ -107,127 +109,38 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
         String lineCostString = context.getString(R.string.upgrade) + "\n" + ConvertNumber.numberToString(lineCost);
         holder.factoryLineUpgradeButton.setText(lineCostString);
         final double finalLineCost = lineCost;
-        mUserDataRef.child(context.getString(R.string.user_states)).child(context.getString(R.string.db_balance)).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    double balance = dataSnapshot.getValue(Double.class);
-                    if (balance < line.getOpenCost()) {
-                        holder.factoryLineOpenButton.setEnabled(false);
-                    } else {
-                        holder.factoryLineOpenButton.setEnabled(true);
-                    }
-                    if (balance < finalLineCost) {
-                        holder.factoryLineUpgradeButton.setEnabled(false);
-                    } else {
-                        holder.factoryLineUpgradeButton.setEnabled(true);
-                    }
-                }
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
 
-            }
-        });
+        double balance = Double.valueOf(FactoryPreferenceManager.getPrefBalance(context));
+        if (balance < line.getOpenCost()) {
+            holder.factoryLineOpenButton.setEnabled(false);
+        } else {
+            holder.factoryLineOpenButton.setEnabled(true);
+        }
+        if (balance < finalLineCost) {
+            holder.factoryLineUpgradeButton.setEnabled(false);
+        } else {
+            holder.factoryLineUpgradeButton.setEnabled(true);
+        }
+
+        Animation animation = AnimationUtils.loadAnimation(context, R.anim.worker_move);
+        int duration = line.getConfigTime() * 10;
+        animation.setDuration(duration);
+        //repeat working process
+        holder.workerView.setAnimation(animation);
 
         holder.factoryLineOpenButton.setOnClickListener(new ClickHandler(line, key));
         holder.factoryLineUpgradeButton.setOnClickListener(new ClickHandler(line, key));
         if (line.isOpen()) {
             holder.factoryLineOpenButton.setVisibility(View.GONE);
             holder.factoryLineUpgradeButton.setVisibility(View.VISIBLE);
-
-
-
+            holder.workerView.animate();
         } else {
             holder.factoryLineOpenButton.setVisibility(View.VISIBLE);
             holder.factoryLineUpgradeButton.setVisibility(View.GONE);
+            holder.workerView.clearAnimation();
         }
-
-
-        //repeat working process
-        workTimeInterval = 100 * line.getConfigTime();
-
-        WorkingProgress workingProgress = new WorkingProgress(holder);
-        holder.workingProgressBar.setMax(workTimeInterval);
-        workHandler = new Handler();
-
-        final Runnable workChecker = new Runnable() {
-            @Override
-            public void run() {
-                Timber.d(key + " working");
-                workHandler.postDelayed(this, workTimeInterval);
-            }
-        };
-        if (line.isOpen()) {
-            workHandler.postDelayed(workChecker, workTimeInterval);
-        }else{
-            workHandler.removeCallbacks(workChecker);
-        }
-    }
-
-    private void workDone(FactoryLine line, ViewHolder holder) {
-        double workProfit = line.getWorkCapacity();
-        String workProfitString = ConvertNumber.numberToString(workProfit);
-        holder.workProfitView.setVisibility(View.VISIBLE);
-        holder.workProfitView.setText(workProfitString);
-        holder.workProfitView.setAnimation(AnimationUtils.loadAnimation(context, R.anim.work_profit));
-        holder.workProfitView.animate();
-
 
     }
-
-
-    private class WorkingProgress extends AsyncTask<Integer, Integer, Double> {
-
-        ViewHolder holder;
-        public WorkingProgress(ViewHolder holder){
-            this.holder = holder;
-        }
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            super.onProgressUpdate(values);
-            int progress = values[0];
-            if (progress < 100) {
-                holder.workingProgressBar.setProgress(progress);
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Double profit) {
-            super.onPostExecute(profit);
-            holder.workingProgressBar.setVisibility(View.INVISIBLE);
-            holder.workingProgressBar.setProgress(0);
-
-            String profitString = ConvertNumber.numberToString(profit);
-            holder.workProfitView.setText(profitString);
-            Animation profitAni = AnimationUtils.loadAnimation(context, R.anim.work_profit);
-            holder.workProfitView.startAnimation(profitAni);
-
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            holder.workingProgressBar.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected Double doInBackground(Integer... params) {
-
-            double profit = 100;
-                for (int i = 0; i < params[0]; i++) {
-                    try {
-                        Thread.sleep(100);
-                        publishProgress(i);
-
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-
-                }
-            return profit;
-        }
-    };
 
     private class ClickHandler implements View.OnClickListener {
 
