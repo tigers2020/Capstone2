@@ -11,8 +11,11 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 /**
  * Created by tiger on 1/24/2017.
@@ -99,11 +102,9 @@ public class FactoryPreferenceManager implements GoogleApiClient.OnConnectionFai
 
     }
 
-    public static boolean getPrefWorking(Context context) {
+    public static boolean getPrefWorking(Context context, String key) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean isWorking = preferences.getBoolean(context.getString(R.string.db_is_working), context.getResources().getBoolean(R.bool.default_boolean));
-
-
+        boolean isWorking = preferences.getBoolean(key + "_" + context.getString(R.string.db_is_working), context.getResources().getBoolean(R.bool.default_boolean));
         return isWorking;
     }
     public static void  setPrefWorking(Context context, String key, boolean isWorking){
@@ -116,5 +117,22 @@ public class FactoryPreferenceManager implements GoogleApiClient.OnConnectionFai
         editor.apply();
 
 
+    }
+
+    public static FactoryLine getFactoryLine(Context context, String lineNumber) {
+        final FactoryLine[] line = {new FactoryLine()};
+        mUserDataRef.child(context.getString(R.string.db_factories)).child(getPrefFactoryName(context))
+                .child(lineNumber).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                line[0] = dataSnapshot.getValue(FactoryLine.class);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        return line[0];
     }
 }

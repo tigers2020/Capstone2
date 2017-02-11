@@ -16,11 +16,12 @@ public class FactoryLine {
     private int configValue;
     private double idleCash;
     private int lineNumber;
+    private long workDate;
 
     public FactoryLine() {
     }
 
-    public FactoryLine(int level, double openCost, double lineCost, double workCapacity, boolean isOpen, boolean isWorking, int configQuality, int configTime, int configValue, double idleCash, int lineNumber) {
+    public FactoryLine(int level, double openCost, double lineCost, double workCapacity, boolean isOpen, boolean isWorking, int configQuality, int configTime, int configValue, double idleCash, int lineNumber, long workDate) {
         this.level = level;
         this.openCost = openCost;
         this.lineCost = lineCost;
@@ -32,6 +33,7 @@ public class FactoryLine {
         this.configValue = configValue;
         this.idleCash = idleCash;
         this.lineNumber = lineNumber;
+        this.workDate = workDate;
     }
 
     public int getLevel() {
@@ -120,5 +122,13 @@ public class FactoryLine {
 
     public void setWorking(boolean working) {
         isWorking = working;
+    }
+
+    public long getWorkDate() {
+        return workDate;
+    }
+
+    public void setWorkDate(long workDate) {
+        this.workDate = workDate;
     }
 }

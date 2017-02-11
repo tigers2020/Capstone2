@@ -15,7 +15,7 @@
     <string name="db_factory_5" translatable="false">processor_factory</string>
     <string name="db_user_states">user_states</string>
     <string name="db_balance">balance</string>
-    <string name="db_idle_cash">idle_cash</string>
+    <string name="db_idle_cash">idleCash</string>
     <string name="db_factories">factories</string>
 
     <string name="factory_1_name">Parts Factory</string>

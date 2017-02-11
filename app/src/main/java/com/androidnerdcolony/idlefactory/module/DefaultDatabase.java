@@ -22,7 +22,7 @@ public class DefaultDatabase {
         FactoryLine defaultFactoryLine = setDefaultFactoryLine(context);
 
         for (int i = 0; i < 10; i++) {
-            factoryRef.child("line_"+i).setValue(setFactoryLines(defaultFactoryLine, i));
+            factoryRef.child(String.valueOf(i)).setValue(setFactoryLines(defaultFactoryLine, i));
             FactoryPreferenceManager.setDefaultFactoryLine(defaultFactoryLine, i, context);
 
         }
@@ -46,13 +46,18 @@ public class DefaultDatabase {
         double openCost = defaultFactoryLine.getOpenCost();
         double lineCost = defaultFactoryLine.getLineCost();
         double workCapacity = defaultFactoryLine.getWorkCapacity();
+        int defaultTime = defaultFactoryLine.getConfigTime();
         for (int j = 0; j < i; j++) {
             openCost = openCost * (14 + (j*2));
             lineCost = openCost + (openCost * (9+(j*2))/100);
             workCapacity = workCapacity * (100+(j*10));
+            defaultTime = defaultTime * 2;
+
         }
         currentLine.setOpenCost(openCost);
         currentLine.setLineCost(lineCost);
+        currentLine.setWorkCapacity(workCapacity);
+        currentLine.setConfigTime(defaultTime);
 
 
         return currentLine;
@@ -63,7 +68,7 @@ public class DefaultDatabase {
         factoryLine.setIdleCash(1);
         factoryLine.setLevel(1);
         factoryLine.setConfigQuality(context.getResources().getInteger(R.integer.factory_line_default_config));
-        factoryLine.setConfigTime(context.getResources().getInteger(R.integer.factory_line_default_config));
+        factoryLine.setConfigTime(context.getResources().getInteger(R.integer.factory_line_default_time));
         factoryLine.setConfigValue(context.getResources().getInteger(R.integer.factory_line_default_config));
         factoryLine.setOpen(false);
         factoryLine.setWorking(false);

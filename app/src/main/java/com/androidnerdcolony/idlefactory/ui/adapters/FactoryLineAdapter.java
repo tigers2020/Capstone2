@@ -1,14 +1,7 @@
 package com.androidnerdcolony.idlefactory.ui.adapters;
 
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.AsyncTask;
-import android.os.Handler;
-import android.preference.PreferenceManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -20,38 +13,24 @@ import android.widget.Toast;
 
 import com.androidnerdcolony.idlefactory.R;
 import com.androidnerdcolony.idlefactory.datalayout.FactoryLine;
+import com.androidnerdcolony.idlefactory.firebase.FirebaseUtil;
 import com.androidnerdcolony.idlefactory.module.ConvertNumber;
 import com.androidnerdcolony.idlefactory.module.FactoryPreferenceManager;
-import com.androidnerdcolony.idlefactory.module.FactoryWorking;
 import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 
-import java.sql.Time;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.Timer;
-import java.util.TreeMap;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import timber.log.Timber;
 
-import static android.R.attr.delay;
-import static android.R.attr.level;
-import static android.R.attr.priority;
-import static com.androidnerdcolony.idlefactory.R.string.balance;
 import static com.androidnerdcolony.idlefactory.R.string.open;
-import static com.androidnerdcolony.idlefactory.R.string.truck;
 
 /**
  * Created by tiger on 1/23/2017.
@@ -158,8 +137,6 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
         public void onClick(View view) {
 //        mClickHandler.onClick(view);
             int id = view.getId();
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-
             String PrefBalance = FactoryPreferenceManager.getPrefBalance(context);
             balance = Double.valueOf(PrefBalance);
             String factoryName = FactoryPreferenceManager.getPrefFactoryName(context);
@@ -171,15 +148,14 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
                     double openCost = line.getOpenCost();
                     //need to get line information.
                     Timber.d("onClick Balance = " + balance);
-                    if (balance < openCost){
-                        Toast.makeText(context, "balance is not enough", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
+//                    if (balance < openCost){
+//                        Toast.makeText(context, "balance is not enough", Toast.LENGTH_SHORT).show();
+//                        return;
+//                    }
                     balance = balance - openCost;
-                    mUserDataRef.child(context.getString(R.string.user_states)).child(context.getString(R.string.db_balance)).setValue(balance);
-                    mUserDataRef.child(context.getString(R.string.db_factories)).child(factoryName).child(key).child("open").setValue(true);
-
-
+                    FactoryPreferenceManager.setPrefBalance(context, balance);
+                    FirebaseUtil.setBalance(context, balance);
+                    FirebaseUtil.OpenLine(context, key);
                     break;
                 case R.id.factory_line_upgrade_button:
                     Timber.d("Line = " + line.getLineCost());
@@ -195,12 +171,12 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
                         return;
                     }
                     balance = balance - upgradeCost;
-                    mUserDataRef.child(context.getString(R.string.user_states)).child(context.getString(R.string.db_balance)).setValue(balance);
-                    Timber.d("level before: " + level);
+                    FactoryPreferenceManager.setPrefBalance(context, balance);
+                    FirebaseUtil.setBalance(context, balance);
                     level = level + 1;
                     factoryRef.child("level").setValue(level);
-                    Timber.d("level after: " + level);
                     FactoryPreferenceManager.setPrefLevel(context, level, key);
+                    FirebaseUtil.setLevel(context, level, key);
 
 
                     //need to get line information..

@@ -3,10 +3,7 @@ package com.androidnerdcolony.idlefactory.ui;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.ListView;
@@ -15,8 +12,10 @@ import android.widget.Toast;
 
 import com.androidnerdcolony.idlefactory.R;
 import com.androidnerdcolony.idlefactory.datalayout.FactoryLine;
+import com.androidnerdcolony.idlefactory.firebase.FirebaseUtil;
 import com.androidnerdcolony.idlefactory.module.ConvertNumber;
 import com.androidnerdcolony.idlefactory.module.DefaultDatabase;
+import com.androidnerdcolony.idlefactory.sync.FactoryWork;
 import com.androidnerdcolony.idlefactory.ui.adapters.FactoryLineAdapter;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -203,21 +202,25 @@ public class CompanyFrontActivity extends AppCompatActivity implements GoogleApi
     private void updateUI() {
         if (mUser != null) {
             checkNewPlayer();
-            DatabaseReference factoryRef = mUserDataRef.child(context.getString(R.string.factories)).child(context.getString(R.string.db_factory_1));
-            DatabaseReference userStateRef = mUserDataRef.child(context.getString(R.string.user_states));
+            DatabaseReference factoryRef = FirebaseUtil.getFactory(context);
+            DatabaseReference userStateRef = FirebaseUtil.getUserState(context);
             mAdapter = new FactoryLineAdapter(this, FactoryLine.class, factoryRef);
 
             factoryListView.setAdapter(mAdapter);
 
             factoryRef.addChildEventListener(new ChildEventListener() {
                 Map<String, Double> idleCash = new TreeMap<>();
+
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    double cash = dataSnapshot.child("idleCash").getValue(Double.class);
-                    boolean isOpen = dataSnapshot.child("open").getValue(Boolean.class);
-                    if (isOpen) {
-                        idleCash.put(dataSnapshot.getKey(), cash);
-                        setIdleChashViewText(idleCash);
+                    Timber.d("child: " + dataSnapshot.toString());
+                    if (dataSnapshot.exists()) {
+                        double cash = dataSnapshot.child(getString(R.string.db_idle_cash)).getValue(Double.class);
+                        boolean isOpen = dataSnapshot.child(getString(R.string.db_open)).getValue(Boolean.class);
+                        if (isOpen) {
+                            idleCash.put(dataSnapshot.getKey(), cash);
+                            setIdleChashViewText(idleCash);
+                        }
                     }
 
                 }
@@ -253,12 +256,6 @@ public class CompanyFrontActivity extends AppCompatActivity implements GoogleApi
                     double balance;
                     if (dataSnapshot.exists()) {
                         balance = dataSnapshot.getValue(Double.class);
-
-                        SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(context);
-                        SharedPreferences.Editor editor = preference.edit();
-
-                        editor.putString(getString(R.string.db_balance), String.valueOf(balance));
-                        editor.apply();
                         String balanceString = ConvertNumber.numberToString(balance);
                         balanceView.setText(balanceString);
                     }
@@ -270,14 +267,16 @@ public class CompanyFrontActivity extends AppCompatActivity implements GoogleApi
                 }
             });
 
+            FactoryWork.initialize(context);
+
         }
     }
 
     private void setIdleChashViewText(Map<String, Double> idleCashes) {
         double cash = 0;
         for (int i = 0; i < idleCashes.size(); i++) {
-            if (idleCashes.containsKey("line_" + i)) {
-                cash += idleCashes.get("line_" + i);
+            if (idleCashes.containsKey(String.valueOf(i))) {
+                cash += idleCashes.get(String.valueOf(i));
             }
         }
         String CashString = ConvertNumber.numberToString(cash);

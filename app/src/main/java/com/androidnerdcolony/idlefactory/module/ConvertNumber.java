@@ -1,10 +1,7 @@
 package com.androidnerdcolony.idlefactory.module;
 
 import android.annotation.SuppressLint;
-import android.icu.text.DecimalFormat;
-import android.icu.text.NumberFormat;
 
-import java.math.BigDecimal;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
@@ -88,7 +85,7 @@ public class ConvertNumber {
     };
     private static final NavigableMap<Integer, String> MAP;
 
-    static{
+    static {
         MAP = new TreeMap<>();
 
         for (int i = 0; i < SCALE_NAME.length; i++) {
@@ -96,12 +93,12 @@ public class ConvertNumber {
         }
     }
 
-    public static String numberToString(double number){
+    public static String numberToString(double number) {
         int powered = 0;
         double thisNumber = number;
 
-        while (thisNumber > 1000){
-            thisNumber = thisNumber/ 1000;
+        while (thisNumber > 1000) {
+            thisNumber = thisNumber / 1000;
             powered++;
         }
 
@@ -110,10 +107,9 @@ public class ConvertNumber {
         String numberString = String.format("%.2f", thisNumber);
 
 
-
         Map.Entry<Integer, String> entry = MAP.floorEntry(powered);
 
-        if(entry == null){
+        if (entry == null) {
             return String.valueOf(number);
         }
 
