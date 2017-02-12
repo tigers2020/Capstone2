@@ -51,9 +51,8 @@ public class DefaultDatabase {
             openCost = openCost * (14 + (j*2));
             lineCost = openCost + (openCost * (9+(j*2))/100);
             workCapacity = workCapacity * (100+(j*10));
-            defaultTime = defaultTime * 2;
-
         }
+        defaultTime = defaultTime + (int)(defaultTime * 0.8);
         currentLine.setOpenCost(openCost);
         currentLine.setLineCost(lineCost);
         currentLine.setWorkCapacity(workCapacity);

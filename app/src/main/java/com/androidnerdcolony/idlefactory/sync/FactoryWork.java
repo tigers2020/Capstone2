@@ -52,6 +52,7 @@ public class FactoryWork {
         factoryLineStateRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                double balance = Double.valueOf(FactoryPreferenceManager.getPrefBalance(context));
                 for (DataSnapshot factoryLineShot : dataSnapshot.getChildren()) {
                     String key = factoryLineShot.getKey();
                     FactoryLine line = factoryLineShot.getValue(FactoryLine.class);
@@ -61,16 +62,19 @@ public class FactoryWork {
                         workDate = currentDate;
                     }
                     if (line.isOpen()) {
-                        if (workDate >= currentDate) {
+                        if (workDate <= currentDate) {
                             double workCapacity = line.getWorkCapacity();
                             int level = line.getLevel();
                             double workProfit = workCapacity + ((workCapacity * 0.09) * level);
-                            double balance = Double.valueOf(FactoryPreferenceManager.getPrefBalance(context));
                             balance = balance + workProfit;
                             workDate = currentDate + line.getConfigTime();
                             FactoryPreferenceManager.setPrefBalance(context, balance);
                             FirebaseUtil.setBalance(context, balance);
                           FirebaseUtil.setWorkDate(context, workDate, key);
+                            Timber.d(key + " line is working" + workDate + " : " + currentDate);
+
+                        }else{
+                            Timber.d(key + " line is not working" + workDate + " : " + currentDate);
                         }
                     }
 
