@@ -148,12 +148,11 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
                     double openCost = line.getOpenCost();
                     //need to get line information.
                     Timber.d("onClick Balance = " + balance);
-//                    if (balance < openCost){
-//                        Toast.makeText(context, "balance is not enough", Toast.LENGTH_SHORT).show();
-//                        return;
-//                    }
+                    if (balance < openCost){
+                        Toast.makeText(context, "balance is not enough", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
                     balance = balance - openCost;
-                    FactoryPreferenceManager.setPrefBalance(context, balance);
                     FirebaseUtil.setBalance(context, balance);
                     FirebaseUtil.OpenLine(context, key);
                     break;
@@ -171,7 +170,6 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
                         return;
                     }
                     balance = balance - upgradeCost;
-                    FactoryPreferenceManager.setPrefBalance(context, balance);
                     FirebaseUtil.setBalance(context, balance);
                     level = level + 1;
                     factoryRef.child("level").setValue(level);

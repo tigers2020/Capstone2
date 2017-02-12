@@ -68,7 +68,6 @@ public class FactoryWork {
                             double workProfit = workCapacity + ((workCapacity * 0.09) * level);
                             balance = balance + workProfit;
                             workDate = currentDate + line.getConfigTime();
-                            FactoryPreferenceManager.setPrefBalance(context, balance);
                             FirebaseUtil.setBalance(context, balance);
                           FirebaseUtil.setWorkDate(context, workDate, key);
                             Timber.d(key + " line is working" + workDate + " : " + currentDate);

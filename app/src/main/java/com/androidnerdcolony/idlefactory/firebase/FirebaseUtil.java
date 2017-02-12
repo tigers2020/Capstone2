@@ -62,7 +62,8 @@ public class FirebaseUtil implements GoogleApiClient.OnConnectionFailedListener 
 
     public static void setBalance(Context context, double balance) {
         DatabaseReference userState = getUserState(context);
-        userState.child(context.getString(R.string.balance)).setValue(balance);
+        FactoryPreferenceManager.setPrefBalance(context, balance);
+        userState.child(context.getString(R.string.db_balance)).setValue(balance);
 
     }
 
