@@ -17,6 +17,10 @@
     <string name="db_balance">balance</string>
     <string name="db_idle_cash">idleCash</string>
     <string name="db_factories">factories</string>
+    <string name="db_open" translatable="false">open</string>
+    <string name="db_is_working" translatable="false">working</string>
+    <string name="db_level" translatable="false">level</string>
+    <string name="db_workDate" translatable="false">workDate</string>
 
     <string name="factory_1_name">Parts Factory</string>
     <string name="factory_2_name">Transistor Factory</string>
@@ -31,6 +35,4 @@
     <string name="balance">Balance</string>
     <string name="idle_cash">Idle Cash</string>
     <string name="upgrade">Upgrade</string>
-    <string name="db_open">open</string>
-    <string name="db_is_working">working</string>
 </resources>

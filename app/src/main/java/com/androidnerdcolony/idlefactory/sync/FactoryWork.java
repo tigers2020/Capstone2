@@ -14,10 +14,6 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.Date;
 
-import timber.log.Timber;
-
-import static android.os.Build.VERSION_CODES.M;
-
 /**
  * Created by tiger on 2/10/2017.
  */
@@ -34,6 +30,7 @@ public class FactoryWork {
                 mWorkTask = new AsyncTask<Void, Void, Void>() {
                     @Override
                     protected Void doInBackground(Void... voids) {
+                        calculateIdleCash(context);
                         working(context);
                         return null;
                     }
@@ -44,6 +41,28 @@ public class FactoryWork {
             }
         });
 
+    }
+
+    private static void calculateIdleCash(final Context context) {
+        DatabaseReference factoryLineStateRef = FirebaseUtil.getFactory(context);
+        factoryLineStateRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot factoryLineShot : dataSnapshot.getChildren()){
+                    String key = factoryLineShot.getKey();
+                    FactoryLine line = factoryLineShot.getValue(FactoryLine.class);
+                    double workCapacity = line.getWorkCapacity();
+                    long workProgressTime = line.getConfigTime();
+                    double idleCash = workCapacity / (workProgressTime/100);
+                    FirebaseUtil.setIdleCash(context, key, idleCash);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private static void working(final Context context) {
@@ -58,7 +77,7 @@ public class FactoryWork {
                     FactoryLine line = factoryLineShot.getValue(FactoryLine.class);
                     long currentDate = new Date().getTime();
                     long workDate = line.getWorkDate();
-                    if (workDate <= 0){
+                    if (workDate <= 0) {
                         workDate = currentDate;
                     }
                     if (line.isOpen()) {
@@ -69,11 +88,7 @@ public class FactoryWork {
                             balance = balance + workProfit;
                             workDate = currentDate + line.getConfigTime();
                             FirebaseUtil.setBalance(context, balance);
-                          FirebaseUtil.setWorkDate(context, workDate, key);
-                            Timber.d(key + " line is working" + workDate + " : " + currentDate);
-
-                        }else{
-                            Timber.d(key + " line is not working" + workDate + " : " + currentDate);
+                            FirebaseUtil.setWorkDate(context, workDate, key);
                         }
                     }
 

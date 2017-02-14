@@ -15,6 +15,7 @@ import com.androidnerdcolony.idlefactory.datalayout.FactoryLine;
 import com.androidnerdcolony.idlefactory.firebase.FirebaseUtil;
 import com.androidnerdcolony.idlefactory.module.ConvertNumber;
 import com.androidnerdcolony.idlefactory.module.DefaultDatabase;
+import com.androidnerdcolony.idlefactory.module.FactoryPreferenceManager;
 import com.androidnerdcolony.idlefactory.sync.FactoryWork;
 import com.androidnerdcolony.idlefactory.ui.adapters.FactoryLineAdapter;
 import com.google.android.gms.auth.api.Auth;
@@ -43,6 +44,8 @@ import java.util.TreeMap;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import timber.log.Timber;
+
+import static android.os.Build.VERSION_CODES.M;
 
 public class CompanyFrontActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
@@ -73,7 +76,7 @@ public class CompanyFrontActivity extends AppCompatActivity implements GoogleApi
         setContentView(R.layout.activity_company_front);
         ButterKnife.bind(this);
         this.context = this;
-
+        //  FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         checkGoogleLogin();
     }
 
@@ -181,7 +184,6 @@ public class CompanyFrontActivity extends AppCompatActivity implements GoogleApi
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.exists()) {
                     DefaultDatabase.SetNewDatabase(context, mUserDataRef);
-
                 }
             }
 
@@ -208,47 +210,7 @@ public class CompanyFrontActivity extends AppCompatActivity implements GoogleApi
 
             factoryListView.setAdapter(mAdapter);
 
-            factoryRef.addChildEventListener(new ChildEventListener() {
-                Map<String, Double> idleCash = new TreeMap<>();
-
-                @Override
-                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    Timber.d("child: " + dataSnapshot.toString());
-                    if (dataSnapshot.exists()) {
-                        double cash = dataSnapshot.child(getString(R.string.db_idle_cash)).getValue(Double.class);
-                        boolean isOpen = dataSnapshot.child(getString(R.string.db_open)).getValue(Boolean.class);
-                        if (isOpen) {
-                            idleCash.put(dataSnapshot.getKey(), cash);
-                            setIdleChashViewText(idleCash);
-                        }
-                    }
-
-                }
-
-                @Override
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                    idleCash.put(dataSnapshot.getKey(), dataSnapshot.child("idleCash").getValue(Double.class));
-                    if (idleCash != null) {
-                        setIdleChashViewText(idleCash);
-                    }
-
-                }
-
-                @Override
-                public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-                }
-
-                @Override
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
+            setIdleChashViewText();
             userStateRef.child("balance").addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -256,6 +218,7 @@ public class CompanyFrontActivity extends AppCompatActivity implements GoogleApi
                     double balance;
                     if (dataSnapshot.exists()) {
                         balance = dataSnapshot.getValue(Double.class);
+                        FactoryPreferenceManager.setPrefBalance(context, balance);
                         String balanceString = ConvertNumber.numberToString(balance);
                         balanceView.setText(balanceString);
                     }
@@ -272,13 +235,10 @@ public class CompanyFrontActivity extends AppCompatActivity implements GoogleApi
         }
     }
 
-    private void setIdleChashViewText(Map<String, Double> idleCashes) {
+    private void setIdleChashViewText() {
+
         double cash = 0;
-        for (int i = 0; i < idleCashes.size(); i++) {
-            if (idleCashes.containsKey(String.valueOf(i))) {
-                cash += idleCashes.get(String.valueOf(i));
-            }
-        }
+        FirebaseUtil.getfactory
         String CashString = ConvertNumber.numberToString(cash);
         idleCashView.setText(CashString);
     }

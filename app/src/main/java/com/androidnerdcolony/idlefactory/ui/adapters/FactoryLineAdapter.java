@@ -1,5 +1,6 @@
 package com.androidnerdcolony.idlefactory.ui.adapters;
 
+import android.animation.StateListAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.view.View;
@@ -30,6 +31,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import timber.log.Timber;
 
+import static android.R.attr.duration;
+import static android.R.attr.stateListAnimator;
 import static com.androidnerdcolony.idlefactory.R.string.open;
 
 /**
@@ -102,9 +105,9 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
         }
 
         Animation animation = AnimationUtils.loadAnimation(context, R.anim.worker_move);
-        int duration = line.getConfigTime() * 10;
+        long duration = 5000;
         animation.setDuration(duration);
-        //repeat working process
+
         holder.workerView.setAnimation(animation);
 
         holder.factoryLineOpenButton.setOnClickListener(new ClickHandler(line, key));
@@ -112,7 +115,9 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
         if (line.isOpen()) {
             holder.factoryLineOpenButton.setVisibility(View.GONE);
             holder.factoryLineUpgradeButton.setVisibility(View.VISIBLE);
-            holder.workerView.animate();
+            if (!animation.hasEnded() && animation.hasStarted()) {
+                holder.workerView.animate();
+            }
         } else {
             holder.factoryLineOpenButton.setVisibility(View.VISIBLE);
             holder.factoryLineUpgradeButton.setVisibility(View.GONE);
@@ -175,9 +180,6 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
                     factoryRef.child("level").setValue(level);
                     FactoryPreferenceManager.setPrefLevel(context, level, key);
                     FirebaseUtil.setLevel(context, level, key);
-
-
-                    //need to get line information..
                     break;
 
             }
