@@ -16,7 +16,11 @@ import java.util.Date;
 
 import timber.log.Timber;
 
+<<<<<<< HEAD
 import static android.R.attr.id;
+=======
+import static android.os.Build.VERSION_CODES.M;
+>>>>>>> parent of b04515a... feat: sync IdleCash
 
 /**
  * Created by tiger on 2/10/2017.
@@ -46,8 +50,11 @@ public class FactoryWork {
 
     }
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> parent of b04515a... feat: sync IdleCash
     private static void working(final Context context) {
         DatabaseReference factoryLineStateRef = FirebaseUtil.getFactory(context);
 
@@ -60,7 +67,7 @@ public class FactoryWork {
                     FactoryLine line = factoryLineShot.getValue(FactoryLine.class);
                     long currentDate = new Date().getTime();
                     long workDate = line.getWorkDate();
-                    if (workDate <= 0) {
+                    if (workDate <= 0){
                         workDate = currentDate;
                     }
                     if (line.isOpen()) {
@@ -71,7 +78,11 @@ public class FactoryWork {
                             balance = balance + workProfit;
                             workDate = currentDate + line.getConfigTime();
                             FirebaseUtil.setBalance(context, balance);
-                            FirebaseUtil.setWorkDate(context, workDate, key);
+                          FirebaseUtil.setWorkDate(context, workDate, key);
+                            Timber.d(key + " line is working" + workDate + " : " + currentDate);
+
+                        }else{
+                            Timber.d(key + " line is not working" + workDate + " : " + currentDate);
                         }
                     }
 

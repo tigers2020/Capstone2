@@ -68,11 +68,11 @@ public class FirebaseUtil implements GoogleApiClient.OnConnectionFailedListener 
 
     public static void OpenLine(Context context, String lineNumber) {
         DatabaseReference factoryRef = getFactoryLineState(context, lineNumber);
-        factoryRef.child(context.getString(R.string.db_open)).setValue(true);
+        factoryRef.child("open").setValue(true);
     }
     public static void OpenLine(Context context, int lineNumber) {
         DatabaseReference factoryRef = getFactoryLineState(context, lineNumber);
-        factoryRef.child(context.getString(R.string.db_open)).setValue(true);
+        factoryRef.child("open").setValue(true);
     }
 
     @Override
@@ -82,16 +82,13 @@ public class FirebaseUtil implements GoogleApiClient.OnConnectionFailedListener 
 
     public static void setWorkDate(Context context, long workDate, String key) {
         DatabaseReference factoryLineRef = getFactoryLineState(context, key);
-        factoryLineRef.child(context.getString(R.string.db_workDate)).setValue(workDate);
+        Timber.d("setWorkDate: factoryLIneRef: " + factoryLineRef.toString());
+        Timber.d("key is = " + key);
+        factoryLineRef.child("workDate").setValue(workDate);
     }
 
     public static void setLevel(Context context, int level, String key) {
         DatabaseReference factoryLineRef = getFactoryLineState(context, key);
-        factoryLineRef.child(context.getString(R.string.db_level)).setValue(level);
-    }
-
-    public static void setIdleCash(Context context, String key, double idleCash) {
-        DatabaseReference factoryLIneRef = getFactoryLineState(context, key);
-        factoryLIneRef.child(context.getString(R.string.db_idle_cash)).setValue(idleCash);
+        factoryLineRef.child("level").setValue(level);
     }
 }

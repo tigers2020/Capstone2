@@ -46,11 +46,11 @@ public class DefaultDatabase {
         double openCost = defaultFactoryLine.getOpenCost();
         double lineCost = defaultFactoryLine.getLineCost();
         double workCapacity = defaultFactoryLine.getWorkCapacity();
-        long defaultTime = defaultFactoryLine.getConfigTime();
+        int defaultTime = defaultFactoryLine.getConfigTime();
         for (int j = 0; j < i; j++) {
             openCost = openCost * (14 + (j*2));
-            lineCost = openCost + (openCost * (9+(j))/100);
-            workCapacity = workCapacity * (10+(j));
+            lineCost = openCost + (openCost * (9+(j*2))/100);
+            workCapacity = workCapacity * (100+(j*10));
         }
         defaultTime = defaultTime + (int)(defaultTime * 0.8);
         currentLine.setOpenCost(openCost);
