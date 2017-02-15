@@ -111,10 +111,12 @@ public class CompanyFrontActivity extends AppCompatActivity implements GoogleApi
         showProgressDialog();
 
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
+        Timber.d("Token: " + account.getIdToken());
         mAuth.signInWithCredential(credential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (!task.isSuccessful()) {
+                    Timber.d("Authentication failed" + task.getException().toString());
                     Toast.makeText(CompanyFrontActivity.this, "Authentication failed", Toast.LENGTH_SHORT).show();
                 }
                 hideProgressDialog();

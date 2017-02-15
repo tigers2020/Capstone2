@@ -115,7 +115,7 @@ public class FactoryLineAdapter extends FirebaseListAdapter<FactoryLine> {
         if (line.isOpen()) {
             holder.factoryLineOpenButton.setVisibility(View.GONE);
             holder.factoryLineUpgradeButton.setVisibility(View.VISIBLE);
-            if (!animation.hasEnded() && animation.hasStarted()) {
+            if (animation.hasEnded() && !animation.hasStarted()) {
                 holder.workerView.animate();
             }
         } else {
