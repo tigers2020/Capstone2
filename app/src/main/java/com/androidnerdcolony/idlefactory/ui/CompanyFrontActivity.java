@@ -3,6 +3,7 @@ package com.androidnerdcolony.idlefactory.ui;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -31,21 +32,15 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.Map;
-import java.util.TreeMap;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import timber.log.Timber;
-
-import static android.os.Build.VERSION_CODES.M;
 
 public class CompanyFrontActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
@@ -67,6 +62,13 @@ public class CompanyFrontActivity extends AppCompatActivity implements GoogleApi
     FirebaseDatabase mDatabase;
     DatabaseReference mUserDataRef;
     Context context;
+    SharedPreferences.OnSharedPreferenceChangeListener spChanged = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+            String idleCashString = sharedPreferences.getString(getString(R.string.db_idle_cash), "0");
+            idleCashView.setText(idleCashString);
+        }
+    };
 
     FactoryLineAdapter mAdapter;
 
@@ -210,7 +212,7 @@ public class CompanyFrontActivity extends AppCompatActivity implements GoogleApi
 
             factoryListView.setAdapter(mAdapter);
 
-            setIdleChashViewText();
+            setIdleCashViewText();
             userStateRef.child("balance").addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -218,7 +220,6 @@ public class CompanyFrontActivity extends AppCompatActivity implements GoogleApi
                     double balance;
                     if (dataSnapshot.exists()) {
                         balance = dataSnapshot.getValue(Double.class);
-                        FactoryPreferenceManager.setPrefBalance(context, balance);
                         String balanceString = ConvertNumber.numberToString(balance);
                         balanceView.setText(balanceString);
                     }
@@ -235,12 +236,35 @@ public class CompanyFrontActivity extends AppCompatActivity implements GoogleApi
         }
     }
 
-    private void setIdleChashViewText() {
+    private void setIdleCashViewText() {
+        DatabaseReference factoryLineStateRef = FirebaseUtil.getFactory(context);
+        factoryLineStateRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                double idleCashTotal = 0;
+                for (DataSnapshot factoryLineShot : dataSnapshot.getChildren()){
+                    String key = factoryLineShot.getKey();
+                    FactoryLine line = factoryLineShot.getValue(FactoryLine.class);
+                    boolean isOpen = line.isOpen();
+                    double workCapacity = line.getWorkCapacity();
+                    long workProgressTime = line.getConfigTime();
+                    int level = line.getLevel();
+                    double workProfit = workCapacity + ((workCapacity * 0.09) * level);
+                    double idleCash = workProfit / (workProgressTime/100);
+                    if (isOpen) {
+                        idleCashTotal += idleCash;
+                    }
+                }
+                Timber.d("calculateIdleCash: " + idleCashTotal);
+                FactoryPreferenceManager.setIdleCash(context, idleCashTotal);
+                String idleString = ConvertNumber.numberToString(idleCashTotal) + "/s";
+                idleCashView.setText(String.valueOf(idleString));
+            }
 
-        double cash = 0;
-        FirebaseUtil.getfactory
-        String CashString = ConvertNumber.numberToString(cash);
-        idleCashView.setText(CashString);
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
-
 }

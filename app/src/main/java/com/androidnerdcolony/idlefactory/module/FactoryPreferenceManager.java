@@ -24,7 +24,7 @@ public class FactoryPreferenceManager {
     public static String getPrefBalance(Context context) {
         String balance;
         SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(context);
-        balance = preference.getString(context.getString(R.string.db_balance), "500");
+        balance = preference.getString(context.getString(R.string.db_balance), "500.0");
 
         return balance;
     }
@@ -79,5 +79,13 @@ public class FactoryPreferenceManager {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean(key + "_" + context.getString(R.string.db_is_working), isWorking);
+        editor.apply();
+    }
+
+    public static void setIdleCash(Context context, double idleCash) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(context.getString(R.string.db_idle_cash), String.valueOf(idleCash));
+        editor.apply();
     }
 }

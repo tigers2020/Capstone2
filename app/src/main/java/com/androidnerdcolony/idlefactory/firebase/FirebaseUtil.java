@@ -1,7 +1,6 @@
 package com.androidnerdcolony.idlefactory.firebase;
 
 import android.content.Context;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 
 import com.androidnerdcolony.idlefactory.R;
@@ -12,10 +11,11 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
-import timber.log.Timber;
+import com.google.firebase.database.ValueEventListener;
 
 /**
  * Created by tiger on 2/8/2017.
@@ -44,9 +44,9 @@ public class FirebaseUtil implements GoogleApiClient.OnConnectionFailedListener 
     }
     public static DatabaseReference getFactory(Context context){
         String factoryName = FactoryPreferenceManager.getPrefFactoryName(context);
-        return getFactoryLine(context, factoryName);
+        return getFactoryLines(context, factoryName);
     }
-    public static DatabaseReference getFactoryLine(Context context, String factoryName) {
+    public static DatabaseReference getFactoryLines(Context context, String factoryName) {
         return mDatabase.getReference(mUser.getUid()).child(context.getString(R.string.factories)).child(factoryName);
     }
 
@@ -64,7 +64,6 @@ public class FirebaseUtil implements GoogleApiClient.OnConnectionFailedListener 
         DatabaseReference userState = getUserState(context);
         FactoryPreferenceManager.setPrefBalance(context, balance);
         userState.child(context.getString(R.string.db_balance)).setValue(balance);
-
     }
 
     public static void OpenLine(Context context, String lineNumber) {
